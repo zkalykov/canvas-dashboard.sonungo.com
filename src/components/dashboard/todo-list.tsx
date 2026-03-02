@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTodoItems } from '@/hooks/use-canvas';
+import { useTasks } from '@/hooks/use-tasks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,53 +11,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { CheckSquare, Plus, ExternalLink, Trash2 } from 'lucide-react';
-import type { PersonalTask } from '@/lib/types';
-
-const STORAGE_KEY = 'canvas-dashboard-personal-tasks';
 
 export function TodoList() {
-  const { data: canvasTodos, loading, error } = useTodoItems();
-  const [personalTasks, setPersonalTasks] = useState<PersonalTask[]>([]);
+  const { data: canvasTodos, loading: canvasLoading, error: canvasError } = useTodoItems();
+  const { tasks: personalTasks, loading: tasksLoading, addTask, toggleTask, deleteTask } = useTasks();
   const [newTask, setNewTask] = useState('');
 
-  // Load personal tasks from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      setPersonalTasks(JSON.parse(stored));
-    }
-  }, []);
-
-  // Save personal tasks to localStorage
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(personalTasks));
-  }, [personalTasks]);
-
-  const addTask = () => {
+  const handleAddTask = async () => {
     if (!newTask.trim()) return;
-
-    const task: PersonalTask = {
-      id: Date.now().toString(),
-      title: newTask.trim(),
-      completed: false,
-      createdAt: new Date().toISOString(),
-    };
-
-    setPersonalTasks(prev => [task, ...prev]);
+    await addTask(newTask.trim());
     setNewTask('');
   };
 
-  const toggleTask = (id: string) => {
-    setPersonalTasks(prev =>
-      prev.map(task =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
-  };
-
-  const deleteTask = (id: string) => {
-    setPersonalTasks(prev => prev.filter(task => task.id !== id));
-  };
+  const loading = canvasLoading || tasksLoading;
 
   if (loading) {
     return (
@@ -78,6 +45,10 @@ export function TodoList() {
     );
   }
 
+  // Show incomplete tasks first, then completed
+  const incompleteTasks = personalTasks.filter(t => !t.completed);
+  const completedTasks = personalTasks.filter(t => t.completed);
+
   return (
     <Card>
       <CardHeader>
@@ -93,20 +64,20 @@ export function TodoList() {
             placeholder="Add a personal task..."
             value={newTask}
             onChange={e => setNewTask(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addTask()}
+            onKeyDown={e => e.key === 'Enter' && handleAddTask()}
           />
-          <Button size="icon" onClick={addTask}>
+          <Button size="icon" onClick={handleAddTask}>
             <Plus className="h-4 w-4" />
           </Button>
         </div>
 
         <ScrollArea className="h-[300px] pr-4">
-          {/* Personal tasks */}
-          {personalTasks.length > 0 && (
+          {/* Incomplete personal tasks */}
+          {incompleteTasks.length > 0 && (
             <div className="mb-4">
               <p className="text-xs text-muted-foreground mb-2">Personal Tasks</p>
               <div className="space-y-2">
-                {personalTasks.map(task => (
+                {incompleteTasks.map(task => (
                   <div
                     key={task.id}
                     className="flex items-center gap-3 rounded-lg border p-2"
@@ -115,11 +86,7 @@ export function TodoList() {
                       checked={task.completed}
                       onCheckedChange={() => toggleTask(task.id)}
                     />
-                    <span
-                      className={`flex-1 text-sm ${
-                        task.completed ? 'line-through text-muted-foreground' : ''
-                      }`}
-                    >
+                    <span className="flex-1 text-sm">
                       {task.title}
                     </span>
                     <Button
@@ -137,10 +104,10 @@ export function TodoList() {
           )}
 
           {/* Canvas to-do items */}
-          {error ? (
+          {canvasError ? (
             <p className="text-sm text-muted-foreground">Failed to load Canvas tasks</p>
           ) : canvasTodos && canvasTodos.length > 0 ? (
-            <div>
+            <div className="mb-4">
               <p className="text-xs text-muted-foreground mb-2">From Canvas</p>
               <div className="space-y-2">
                 {canvasTodos.map((item, index) => (
@@ -169,10 +136,41 @@ export function TodoList() {
                 ))}
               </div>
             </div>
-          ) : (
-            personalTasks.length === 0 && (
-              <p className="text-sm text-muted-foreground">No tasks yet</p>
-            )
+          ) : null}
+
+          {/* Completed personal tasks */}
+          {completedTasks.length > 0 && (
+            <div>
+              <p className="text-xs text-muted-foreground mb-2">Completed</p>
+              <div className="space-y-2">
+                {completedTasks.map(task => (
+                  <div
+                    key={task.id}
+                    className="flex items-center gap-3 rounded-lg border p-2 opacity-60"
+                  >
+                    <Checkbox
+                      checked={task.completed}
+                      onCheckedChange={() => toggleTask(task.id)}
+                    />
+                    <span className="flex-1 text-sm line-through text-muted-foreground">
+                      {task.title}
+                    </span>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-6 w-6"
+                      onClick={() => deleteTask(task.id)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {incompleteTasks.length === 0 && completedTasks.length === 0 && (!canvasTodos || canvasTodos.length === 0) && (
+            <p className="text-sm text-muted-foreground">No tasks yet</p>
           )}
         </ScrollArea>
       </CardContent>

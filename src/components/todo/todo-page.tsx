@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTodoItems, useCourses } from '@/hooks/use-canvas';
+import { useTasks } from '@/hooks/use-tasks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,58 +21,24 @@ import {
 import { format } from 'date-fns';
 import type { PersonalTask } from '@/lib/types';
 
-const STORAGE_KEY = 'canvas-dashboard-personal-tasks';
-
 export function TodoPage() {
-  const { data: canvasTodos, loading, error } = useTodoItems();
+  const { data: canvasTodos, loading: canvasLoading, error: canvasError } = useTodoItems();
   const { data: courses } = useCourses();
-  const [personalTasks, setPersonalTasks] = useState<PersonalTask[]>([]);
+  const { tasks: personalTasks, loading: tasksLoading, addTask, toggleTask, deleteTask } = useTasks();
   const [newTask, setNewTask] = useState('');
   const [newTaskDate, setNewTaskDate] = useState('');
 
-  // Load personal tasks from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      setPersonalTasks(JSON.parse(stored));
-    }
-  }, []);
-
-  // Save personal tasks to localStorage
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(personalTasks));
-  }, [personalTasks]);
-
-  const addTask = () => {
+  const handleAddTask = async () => {
     if (!newTask.trim()) return;
-
-    const task: PersonalTask = {
-      id: Date.now().toString(),
-      title: newTask.trim(),
-      completed: false,
-      dueDate: newTaskDate || undefined,
-      createdAt: new Date().toISOString(),
-    };
-
-    setPersonalTasks(prev => [task, ...prev]);
+    await addTask(newTask.trim(), newTaskDate || undefined);
     setNewTask('');
     setNewTaskDate('');
   };
 
-  const toggleTask = (id: string) => {
-    setPersonalTasks(prev =>
-      prev.map(task =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
-  };
-
-  const deleteTask = (id: string) => {
-    setPersonalTasks(prev => prev.filter(task => task.id !== id));
-  };
-
   const pendingPersonal = personalTasks.filter(t => !t.completed);
   const completedPersonal = personalTasks.filter(t => t.completed);
+
+  const loading = canvasLoading || tasksLoading;
 
   if (loading) {
     return (
@@ -104,7 +71,7 @@ export function TodoPage() {
               placeholder="What do you need to do?"
               value={newTask}
               onChange={e => setNewTask(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && addTask()}
+              onKeyDown={e => e.key === 'Enter' && handleAddTask()}
               className="flex-1"
             />
             <Input
@@ -113,7 +80,7 @@ export function TodoPage() {
               onChange={e => setNewTaskDate(e.target.value)}
               className="w-40"
             />
-            <Button onClick={addTask}>
+            <Button onClick={handleAddTask}>
               <Plus className="h-4 w-4 mr-2" />
               Add
             </Button>
@@ -198,7 +165,7 @@ export function TodoPage() {
           <Card>
             <CardContent className="pt-6">
               <ScrollArea className="h-[calc(100vh-380px)]">
-                {error ? (
+                {canvasError ? (
                   <p className="text-muted-foreground">Failed to load Canvas tasks</p>
                 ) : (
                   <div className="space-y-3">
@@ -259,7 +226,7 @@ function PersonalTaskItem({
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border p-3">
+    <div className={`flex items-center gap-3 rounded-lg border p-3 ${task.completed ? 'opacity-60' : ''}`}>
       <Checkbox
         checked={task.completed}
         onCheckedChange={() => onToggle(task.id)}
