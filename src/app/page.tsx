@@ -8,6 +8,7 @@ import { DueCountdowns } from '@/components/dashboard/due-countdowns';
 import { TodoList } from '@/components/dashboard/todo-list';
 import { AnnouncementsFeed } from '@/components/dashboard/announcements-feed';
 import { DiscussionsTracker } from '@/components/dashboard/discussions-tracker';
+import { CourseCards } from '@/components/dashboard/course-cards';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
 
@@ -45,25 +46,31 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0">
       <h1 className="text-2xl font-bold">Dashboard</h1>
 
       {/* Top row - Key metrics */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <DueCountdowns />
-        <WorkloadHeatmap />
-        <TodoList />
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 min-w-0">
+        <div className="min-w-0"><DueCountdowns /></div>
+        <div className="min-w-0"><WorkloadHeatmap /></div>
+        <div className="min-w-0"><TodoList /></div>
       </div>
 
-      {/* Grades overview */}
-      <GradesOverview />
+      {/* Course cards with assignments/quizzes/tasks */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4">Your Courses</h2>
+        <CourseCards />
+      </div>
 
-      {/* Bottom row - Lists */}
+      {/* Lists row */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <UpcomingAssignments />
         <AnnouncementsFeed />
         <DiscussionsTracker />
       </div>
+
+      {/* Grades overview at the bottom */}
+      <GradesOverview />
     </div>
   );
 }

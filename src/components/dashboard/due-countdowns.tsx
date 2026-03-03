@@ -4,7 +4,7 @@ import { useUpcomingAssignments, useCourses } from '@/hooks/use-canvas';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock, AlertTriangle } from 'lucide-react';
+import { Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 import { differenceInDays, differenceInHours, differenceInMinutes } from 'date-fns';
 
 export function DueCountdowns() {
@@ -31,6 +31,11 @@ export function DueCountdowns() {
       return { text: `${minutes}m`, urgent: true };
     }
     return { text: 'Due now!', urgent: true };
+  };
+
+  const isSubmitted = (assignment: { submission?: { workflow_state?: string } }) => {
+    const state = assignment.submission?.workflow_state;
+    return state === 'submitted' || state === 'graded';
   };
 
   if (loading) {
@@ -89,6 +94,7 @@ export function DueCountdowns() {
           <div className="space-y-3">
             {upcomingWithDates.map(assignment => {
               const timeInfo = getTimeRemaining(assignment.due_at!);
+              const submitted = isSubmitted(assignment);
 
               return (
                 <a
@@ -96,7 +102,9 @@ export function DueCountdowns() {
                   href={assignment.html_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block rounded-lg border p-3 transition-colors hover:bg-muted"
+                  className={`block rounded-lg border p-3 transition-colors hover:bg-muted ${
+                    submitted ? 'bg-green-500/10 border-green-500/30' : ''
+                  }`}
                 >
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex-1 min-w-0">
@@ -106,14 +114,16 @@ export function DueCountdowns() {
                       <p className="font-medium text-sm truncate">{assignment.name}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      {timeInfo.urgent && (
+                      {submitted ? (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      ) : timeInfo.urgent ? (
                         <AlertTriangle className="h-4 w-4 text-orange-500" />
-                      )}
+                      ) : null}
                       <Badge
-                        variant={timeInfo.urgent ? 'destructive' : 'secondary'}
-                        className="font-mono text-sm"
+                        variant={submitted ? 'default' : timeInfo.urgent ? 'destructive' : 'secondary'}
+                        className={`font-mono text-sm ${submitted ? 'bg-green-500 hover:bg-green-600' : ''}`}
                       >
-                        {timeInfo.text}
+                        {submitted ? 'Done' : timeInfo.text}
                       </Badge>
                     </div>
                   </div>

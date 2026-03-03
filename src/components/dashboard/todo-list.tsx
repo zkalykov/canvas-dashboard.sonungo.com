@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { CheckSquare, Plus, ExternalLink, Trash2 } from 'lucide-react';
+import { CheckSquare, Plus, ExternalLink, Trash2, X } from 'lucide-react';
 
 export function TodoList() {
   const { data: canvasTodos, loading: canvasLoading, error: canvasError } = useTodoItems();
@@ -50,28 +50,31 @@ export function TodoList() {
   const completedTasks = personalTasks.filter(t => t.completed);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CheckSquare className="h-5 w-5" />
-          To-Do
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {/* Add task input */}
-        <div className="flex gap-2 mb-4">
-          <Input
-            placeholder="Add a personal task..."
-            value={newTask}
-            onChange={e => setNewTask(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleAddTask()}
-          />
-          <Button size="icon" onClick={handleAddTask}>
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
+    <div className="w-full max-w-full overflow-hidden">
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CheckSquare className="h-5 w-5" />
+            To-Do
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {/* Add task input */}
+          <div className="flex gap-2 mb-4 w-full">
+            <Input
+              placeholder="Add a personal task..."
+              value={newTask}
+              onChange={e => setNewTask(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleAddTask()}
+              className="flex-1 min-w-0"
+            />
+            <Button size="icon" onClick={handleAddTask} className="flex-shrink-0">
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
 
-        <ScrollArea className="h-[300px] pr-4">
+          <div className="w-full overflow-hidden">
+            <ScrollArea className="h-[300px]">
           {/* Incomplete personal tasks */}
           {incompleteTasks.length > 0 && (
             <div className="mb-4">
@@ -80,19 +83,20 @@ export function TodoList() {
                 {incompleteTasks.map(task => (
                   <div
                     key={task.id}
-                    className="flex items-center gap-3 rounded-lg border p-2"
+                    className="flex items-center gap-2 rounded-lg border p-2"
                   >
                     <Checkbox
                       checked={task.completed}
                       onCheckedChange={() => toggleTask(task.id)}
+                      className="flex-shrink-0"
                     />
-                    <span className="flex-1 text-sm">
+                    <span className="flex-1 text-sm truncate min-w-0">
                       {task.title}
                     </span>
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-6 w-6"
+                      className="h-6 w-6 flex-shrink-0"
                       onClick={() => deleteTask(task.id)}
                     >
                       <Trash2 className="h-3 w-3" />
@@ -146,22 +150,23 @@ export function TodoList() {
                 {completedTasks.map(task => (
                   <div
                     key={task.id}
-                    className="flex items-center gap-3 rounded-lg border p-2 opacity-60"
+                    className="flex items-center gap-2 rounded-lg border p-2 bg-green-500/10 border-green-500/30"
                   >
                     <Checkbox
                       checked={task.completed}
                       onCheckedChange={() => toggleTask(task.id)}
+                      className="flex-shrink-0"
                     />
-                    <span className="flex-1 text-sm line-through text-muted-foreground">
+                    <span className="flex-1 text-sm line-through text-muted-foreground truncate min-w-0">
                       {task.title}
                     </span>
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-6 w-6"
+                      className="h-6 w-6 flex-shrink-0"
                       onClick={() => deleteTask(task.id)}
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <X className="h-4 w-4" />
                     </Button>
                   </div>
                 ))}
@@ -172,8 +177,10 @@ export function TodoList() {
           {incompleteTasks.length === 0 && completedTasks.length === 0 && (!canvasTodos || canvasTodos.length === 0) && (
             <p className="text-sm text-muted-foreground">No tasks yet</p>
           )}
-        </ScrollArea>
-      </CardContent>
-    </Card>
+            </ScrollArea>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
