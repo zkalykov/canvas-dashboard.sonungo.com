@@ -27,40 +27,48 @@ export default function DashboardPage() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <Card className="max-w-md w-full mx-4 shadow-lg">
-          <CardHeader className="text-center pb-2">
+          <CardHeader className="text-center pb-0">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
               <MessageCircle className="h-7 w-7 text-blue-500" />
             </div>
-            <CardTitle className="text-xl">Welcome to Canvas Portal</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <div className="bg-muted/50 rounded-lg p-3 text-left border border-border/50">
-              <p className="text-sm font-medium mb-1">Third-Party Login System</p>
-              <p className="text-xs text-muted-foreground">
-                We use Telegram for secure authentication. Instead of a traditional password, you will receive a secure, one-time login link from our official bot.
-              </p>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              To access your Canvas dashboard, please authenticate via our Telegram bot.
-              Type <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">/portal</code> in the bot to get your login link.
+            <CardTitle className="text-2xl font-bold">Canvas Portal</CardTitle>
+            <p className="text-sm text-muted-foreground mt-2">
+              Secure authentication via Telegram
             </p>
-            <div className="flex flex-col gap-4 mt-6">
+          </CardHeader>
+          <CardContent className="text-center space-y-6 mt-6">
+            <div className="bg-blue-50/50 dark:bg-blue-900/10 rounded-xl p-4 text-left border border-blue-100 dark:border-blue-900/50">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 p-1.5 flex-shrink-0">
+                  <Send className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold mb-1 text-foreground">How to Login</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    We use a passwordless system. Open our Telegram bot and type <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs font-mono text-foreground font-medium">/portal</code> to get a secure, one-time login link.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4">
               <a
                 href="https://t.me/canvas_sonungo_com_bot"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-500 px-5 py-3 w-full text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 w-full text-sm font-medium text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 overflow-hidden"
               >
-                <Send className="h-4 w-4" />
-                Open Telegram Bot
+                <div className="absolute inset-0 bg-white/20 transition-transform group-hover:translate-x-full -translate-x-full" />
+                <Send className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                <span>Open Telegram Bot</span>
               </a>
               
-              <div className="relative">
+              <div className="relative mt-2 mb-2">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border/50" />
+                  <span className="w-full border-t border-border/60" />
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">or</span>
+                <div className="relative flex justify-center text-xs uppercase font-medium">
+                  <span className="bg-card px-3 text-muted-foreground">or</span>
                 </div>
               </div>
 
@@ -74,8 +82,9 @@ export default function DashboardPage() {
                 Learn more on canvas.sonungo.com
               </a>
             </div>
-            <p className="text-xs text-muted-foreground pt-2">
-              The auth link expires in 1 minute and can only be used once.
+            
+            <p className="text-xs text-muted-foreground/80 pt-2">
+              Login links are single-use and expire in 1 minute.
             </p>
           </CardContent>
         </Card>
