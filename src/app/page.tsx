@@ -44,24 +44,34 @@ export default function DashboardPage() {
               To access your Canvas dashboard, please authenticate via our Telegram bot.
               Type <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">/portal</code> in the bot to get your login link.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mt-4">
-              <a
-                href="https://canvas.sonungo.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-input bg-background hover:bg-accent hover:text-accent-foreground px-5 py-2.5 w-full sm:w-auto text-sm font-medium shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <ExternalLink className="h-4 w-4" />
-                canvas.sonungo.com
-              </a>
+            <div className="flex flex-col gap-4 mt-6">
               <a
                 href="https://t.me/canvas_sonungo_com_bot"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-500 px-5 py-2.5 w-full sm:w-auto text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-500 px-5 py-3 w-full text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               >
                 <Send className="h-4 w-4" />
                 Open Telegram Bot
+              </a>
+              
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border/50" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">or</span>
+                </div>
+              </div>
+
+              <a
+                href="https://canvas.sonungo.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md py-1"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                Learn more on canvas.sonungo.com
               </a>
             </div>
             <p className="text-xs text-muted-foreground pt-2">

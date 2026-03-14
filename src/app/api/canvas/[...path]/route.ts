@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { decryptPayload } from '@/lib/session';
 
 const ENV_CANVAS_BASE_URL = process.env.CANVAS_BASE_URL || process.env.NEXT_PUBLIC_CANVAS_BASE_URL || '';
 const ENV_CANVAS_API_TOKEN = process.env.CANVAS_API_TOKEN || process.env.NEXT_PUBLIC_CANVAS_API_TOKEN || '';
@@ -21,11 +22,13 @@ async function proxyRequest(
     const sessionCookie = cookieStore.get('portal_session');
     
     if (sessionCookie?.value) {
-      const decoded = Buffer.from(sessionCookie.value, 'base64').toString();
-      const session = JSON.parse(decoded);
-      if (session.canvas_url && session.canvas_token) {
+      const decoded = decryptPayload(sessionCookie.value);
+      if (decoded) {
+        const session = JSON.parse(decoded);
+        if (session.canvas_url && session.canvas_token) {
         canvasBaseUrl = session.canvas_url;
         canvasApiToken = session.canvas_token;
+        }
       }
     }
   } catch (e) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { encryptPayload } from '@/lib/session';
 
 const SESSION_DURATION_SECONDS = 2 * 60 * 60; // 2 hours
 
@@ -14,8 +15,8 @@ export async function POST(request: NextRequest) {
 
     const payload = JSON.stringify({ canvas_url, canvas_token });
     
-    // Store as base64 to avoid special character issues in cookies
-    const encodedPayload = Buffer.from(payload).toString('base64');
+    // Encrypt the payload securely so the token is not visible to the user
+    const encodedPayload = encryptPayload(payload);
 
     const cookieStore = await cookies();
     cookieStore.set('portal_session', encodedPayload, {

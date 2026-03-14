@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { decryptPayload } from '@/lib/session';
 
 export async function GET() {
   const cookieStore = await cookies();
@@ -10,7 +11,10 @@ export async function GET() {
   }
 
   try {
-    const decoded = Buffer.from(sessionCookie.value, 'base64').toString();
+    const decoded = decryptPayload(sessionCookie.value);
+    if (!decoded) {
+      throw new Error('Failed to decrypt session');
+    }
     const { canvas_url } = JSON.parse(decoded);
     
     // We only send the boolean state and the canvas_url (for display purposes).
