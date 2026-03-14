@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
 const ENV_CANVAS_BASE_URL = process.env.CANVAS_BASE_URL || process.env.NEXT_PUBLIC_CANVAS_BASE_URL || '';
 const ENV_CANVAS_API_TOKEN = process.env.CANVAS_API_TOKEN || process.env.NEXT_PUBLIC_CANVAS_API_TOKEN || '';
@@ -11,9 +12,29 @@ async function proxyRequest(
   const method = request.method;
   const endpoint = '/' + path.join('/');
 
-  // Prefer session-based credentials from headers, fall back to env vars
-  let canvasBaseUrl = request.headers.get('x-canvas-base-url') || ENV_CANVAS_BASE_URL;
-  const canvasApiToken = request.headers.get('x-canvas-api-token') || ENV_CANVAS_API_TOKEN;
+  // 1. Try to get credentials from the secure cookie first
+  let canvasBaseUrl = ENV_CANVAS_BASE_URL;
+  let canvasApiToken = ENV_CANVAS_API_TOKEN;
+
+  try {
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('portal_session');
+    
+    if (sessionCookie?.value) {
+      const decoded = Buffer.from(sessionCookie.value, 'base64').toString();
+      const session = JSON.parse(decoded);
+      if (session.canvas_url && session.canvas_token) {
+        canvasBaseUrl = session.canvas_url;
+        canvasApiToken = session.canvas_token;
+      }
+    }
+  } catch (e) {
+    console.error('[Canvas Proxy] Error decoding session cookie', e);
+  }
+
+  // Fallback to headers (for legacy compatibility if needed) or explicitly error if not found
+  canvasBaseUrl = request.headers.get('x-canvas-base-url') || canvasBaseUrl;
+  canvasApiToken = request.headers.get('x-canvas-api-token') || canvasApiToken;
 
   if (!canvasBaseUrl || !canvasApiToken) {
     return NextResponse.json(

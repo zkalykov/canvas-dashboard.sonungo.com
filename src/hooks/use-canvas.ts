@@ -81,14 +81,3 @@ export function useTodoItems() {
 export function useUser() {
   return useCanvasData<User>('canvas_user', () => canvasApi.getCurrentUser());
 }
-
-// Check if API is configured
-export function useCanvasConfig() {
-  const [isConfigured, setIsConfigured] = useState(false);
-
-  useEffect(() => {
-    setIsConfigured(canvasApi.isConfigured());
-  }, []);
-
-  return isConfigured;
-}

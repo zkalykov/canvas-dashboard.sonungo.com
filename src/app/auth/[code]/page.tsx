@@ -40,10 +40,7 @@ export default function AuthCodePage({ params }: { params: Promise<{ code: strin
         const data = await response.json();
 
         if (data.status === 'success' && data.canvas_url && data.canvas_token) {
-          login({
-            canvas_url: data.canvas_url,
-            canvas_token: data.canvas_token,
-          });
+          await login(data.canvas_url, data.canvas_token);
           setStatus('success');
           // Short delay so user sees success, then redirect
           setTimeout(() => router.replace('/'), 1200);

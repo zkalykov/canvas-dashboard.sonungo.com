@@ -33,9 +33,9 @@ export function Sidebar() {
   const { data: user, loading } = useUser();
   const { logout } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    window.location.href = '/';
+  const handleLogout = async () => {
+    await logout();
+    // window.location.href is handled inside logout() now, but keeping it here is fine as fallback
   };
 
   return (

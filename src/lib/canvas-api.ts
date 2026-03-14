@@ -15,41 +15,14 @@ class CanvasAPI {
     return '/api/canvas';
   }
 
-  private getSessionCredentials(): { url: string; token: string } | null {
-    if (typeof window === 'undefined') return null;
-    try {
-      const url = sessionStorage.getItem('canvas_url');
-      const token = sessionStorage.getItem('canvas_token');
-      if (url && token) return { url, token };
-    } catch {
-      // sessionStorage not available
-    }
-    return null;
-  }
-
-  private get isConfiguredOnClient(): boolean {
-    // Check sessionStorage first (Telegram auth flow)
-    if (this.getSessionCredentials()) return true;
-    // Fall back to env vars (legacy / dev)
-    return Boolean(
-      process.env.NEXT_PUBLIC_CANVAS_BASE_URL &&
-      process.env.NEXT_PUBLIC_CANVAS_API_TOKEN
-    );
-  }
-
   private async fetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
 
     console.log('[Canvas API] Fetching:', url);
 
-    const creds = this.getSessionCredentials();
     const customHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
     };
-    if (creds) {
-      customHeaders['x-canvas-base-url'] = creds.url;
-      customHeaders['x-canvas-api-token'] = creds.token;
-    }
 
     const response = await fetch(url, {
       ...options,
@@ -329,14 +302,8 @@ class CanvasAPI {
         validation_token: validationToken,
       }),
     });
-  }
-  async getCurrentUser(): Promise<User> {
+  }  async getCurrentUser(): Promise<User> {
     return this.fetch<User>('/users/self/profile');
-  }
-
-  // Helper to check if API is configured
-  isConfigured(): boolean {
-    return this.isConfiguredOnClient;
   }
 }
 
