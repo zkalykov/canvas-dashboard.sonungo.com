@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  portal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # - NEXT_TELEMETRY_DISABLED=1
+    # Once you have a .env file, you can pass them into the container easily:
+    # env_file:
+    #   - .env.local
+    restart: unless-stopped
