@@ -14,30 +14,35 @@ async function proxyRequest(
   const endpoint = '/' + path.join('/');
 
   // 1. Try to get credentials from the secure cookie first
-  let canvasBaseUrl = ENV_CANVAS_BASE_URL;
-  let canvasApiToken = ENV_CANVAS_API_TOKEN;
+  let canvasBaseUrl = '';
+  let canvasApiToken = '';
 
-  try {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('portal_session');
-    
-    if (sessionCookie?.value) {
-      const decoded = decryptPayload(sessionCookie.value);
-      if (decoded) {
-        const session = JSON.parse(decoded);
-        if (session.canvas_url && session.canvas_token) {
-        canvasBaseUrl = session.canvas_url;
-        canvasApiToken = session.canvas_token;
+  if (process.env.APP_STATUS === 'test') {
+    canvasBaseUrl = ENV_CANVAS_BASE_URL;
+    canvasApiToken = ENV_CANVAS_API_TOKEN;
+  } else {
+    try {
+      const cookieStore = await cookies();
+      const sessionCookie = cookieStore.get('portal_session');
+      
+      if (sessionCookie?.value) {
+        const decoded = decryptPayload(sessionCookie.value);
+        if (decoded) {
+          const session = JSON.parse(decoded);
+          if (session.canvas_url && session.canvas_token) {
+            canvasBaseUrl = session.canvas_url;
+            canvasApiToken = session.canvas_token;
+          }
         }
       }
+    } catch (e) {
+      console.error('[Canvas Proxy] Error decoding session cookie', e);
     }
-  } catch (e) {
-    console.error('[Canvas Proxy] Error decoding session cookie', e);
-  }
 
-  // Fallback to headers (for legacy compatibility if needed) or explicitly error if not found
-  canvasBaseUrl = request.headers.get('x-canvas-base-url') || canvasBaseUrl;
-  canvasApiToken = request.headers.get('x-canvas-api-token') || canvasApiToken;
+    // Fallback to headers (for legacy compatibility if needed)
+    canvasBaseUrl = request.headers.get('x-canvas-base-url') || canvasBaseUrl;
+    canvasApiToken = request.headers.get('x-canvas-api-token') || canvasApiToken;
+  }
 
   if (!canvasBaseUrl || !canvasApiToken) {
     return NextResponse.json(

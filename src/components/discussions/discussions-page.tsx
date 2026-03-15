@@ -1,23 +1,18 @@
 'use client';
 
-import { useState } from 'react';
 import { useDiscussions, useCourses } from '@/hooks/use-canvas';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageSquare, ExternalLink, MessageCircle } from 'lucide-react';
+import { MessageSquare, MessageCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DiscussionThread } from './discussion-thread';
-import { Button } from '@/components/ui/button';
-import type { DiscussionTopic } from '@/lib/types';
+import Link from 'next/link';
 
 export function DiscussionsPage() {
   const { data: discussions, loading, error } = useDiscussions();
   const { data: courses } = useCourses();
-  const [selectedTopic, setSelectedTopic] = useState<DiscussionTopic | null>(null);
 
   const getCourseName = (courseId: number) => {
     return courses?.find(c => c.id === courseId)?.course_code || 'Unknown';
@@ -74,9 +69,9 @@ export function DiscussionsPage() {
             ) : (
               <div className="space-y-3">
                 {discussions.map(discussion => (
-                  <button
+                  <Link
+                    href={`/courses/${discussion.course_id}/discussions/${discussion.id}`}
                     key={discussion.id}
-                    onClick={() => setSelectedTopic(discussion)}
                     className="w-full text-left block rounded-lg border p-4 transition-colors hover:bg-muted"
                   >
                     <div className="flex items-start gap-4">
@@ -126,56 +121,13 @@ export function DiscussionsPage() {
                         )}
                       </div>
                     </div>
-                  </button>
+                  </Link>
                 ))}
               </div>
             )}
           </ScrollArea>
         </CardContent>
       </Card>
-
-      {/* Discussion Thread Dialog */}
-      <Dialog open={!!selectedTopic} onOpenChange={() => setSelectedTopic(null)}>
-        <DialogContent className="max-w-3xl max-h-[85vh] overflow-auto">
-          {selectedTopic && (
-            <>
-              <DialogHeader>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className={`h-2 w-2 rounded-full ${getCourseColor(selectedTopic.course_id)}`} />
-                  <span className="text-sm text-muted-foreground">
-                    {getCourseName(selectedTopic.course_id)}
-                  </span>
-                </div>
-                <DialogTitle className="text-xl pr-10">{selectedTopic.title}</DialogTitle>
-                <div className="flex items-center gap-2 mt-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={selectedTopic.author?.avatar_image_url} />
-                    <AvatarFallback>{selectedTopic.author?.display_name?.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm text-muted-foreground">
-                    {selectedTopic.author?.display_name} • {formatDistanceToNow(new Date(selectedTopic.posted_at), { addSuffix: true })}
-                  </span>
-                </div>
-              </DialogHeader>
-
-              <DiscussionThread topic={selectedTopic} />
-
-              <div className="pt-4 border-t mt-4 flex justify-end">
-                <Button variant="outline" asChild>
-                  <a
-                    href={selectedTopic.html_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Open in Canvas
-                  </a>
-                </Button>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

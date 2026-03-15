@@ -3,23 +3,14 @@
 import { useState } from 'react';
 import { useAssignments, useCourses } from '@/hooks/use-canvas';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AssignmentSubmission } from './assignment-submission';
-import { QuizEngine } from '@/components/quizzes/quiz-engine';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import Link from 'next/link';
 import {
   FileText,
-  ExternalLink,
   Calendar,
-  Download,
   CheckCircle,
   Clock,
   AlertTriangle,
@@ -30,7 +21,6 @@ import type { Assignment } from '@/lib/types';
 export function AssignmentsPage() {
   const { data: assignments, loading, error } = useAssignments();
   const { data: courses } = useCourses();
-  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'past' | 'submitted'>('upcoming');
 
   const getCourseName = (courseId: number) => {
@@ -129,10 +119,10 @@ export function AssignmentsPage() {
                   const status = getSubmissionStatus(assignment);
 
                   return (
-                    <button
+                    <Link
+                      href={`/courses/${assignment.course_id}/assignments/${assignment.id}`}
                       key={assignment.id}
-                      onClick={() => setSelectedAssignment(assignment)}
-                      className="w-full text-left rounded-lg border p-4 transition-colors hover:bg-muted"
+                      className="w-full text-left rounded-lg block border p-4 transition-colors hover:bg-muted"
                     >
                       <div className="flex items-start gap-4">
                         <div className="flex-1 min-w-0">
@@ -181,7 +171,7 @@ export function AssignmentsPage() {
                           )}
                         </div>
                       </div>
-                    </button>
+                    </Link>
                   );
                 })}
               </div>
@@ -189,133 +179,6 @@ export function AssignmentsPage() {
           </ScrollArea>
         </CardContent>
       </Card>
-
-      {/* Assignment Detail Dialog */}
-      <Dialog open={!!selectedAssignment} onOpenChange={() => setSelectedAssignment(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
-          {selectedAssignment && (
-            <>
-              <DialogHeader>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className={`h-2 w-2 rounded-full ${getCourseColor(selectedAssignment.course_id)}`} />
-                  <span className="text-sm text-muted-foreground">
-                    {getCourseName(selectedAssignment.course_id)}
-                  </span>
-                </div>
-                <DialogTitle>{selectedAssignment.name}</DialogTitle>
-              </DialogHeader>
-
-              <div className="space-y-4">
-                {/* Due date */}
-                {selectedAssignment.due_at && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span>
-                      Due: {format(new Date(selectedAssignment.due_at), 'EEEE, MMMM d, yyyy h:mm a')}
-                    </span>
-                  </div>
-                )}
-
-                {/* Points */}
-                {selectedAssignment.points_possible && (
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">
-                      {selectedAssignment.points_possible} points possible
-                    </Badge>
-                    {selectedAssignment.submission?.score !== null &&
-                     selectedAssignment.submission?.score !== undefined && (
-                      <Badge variant="default">
-                        Score: {selectedAssignment.submission.score} / {selectedAssignment.points_possible}
-                      </Badge>
-                    )}
-                  </div>
-                )}
-
-                {/* Description */}
-                {selectedAssignment.description && (
-                  <div>
-                    <h4 className="font-medium mb-2">Description</h4>
-                    <div
-                      className="prose prose-sm dark:prose-invert max-w-none text-sm"
-                      dangerouslySetInnerHTML={{ __html: selectedAssignment.description }}
-                    />
-                  </div>
-                )}
-
-                {/* Rubric */}
-                {selectedAssignment.rubric && selectedAssignment.rubric.length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-2">Rubric</h4>
-                    <div className="space-y-2">
-                      {selectedAssignment.rubric.map(criterion => (
-                        <div key={criterion.id} className="rounded-lg border p-3">
-                          <div className="flex justify-between">
-                            <span className="font-medium text-sm">{criterion.description}</span>
-                            <Badge variant="outline">{criterion.points} pts</Badge>
-                          </div>
-                          {criterion.long_description && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {criterion.long_description}
-                            </p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Submission types */}
-                {selectedAssignment.submission_types && (
-                  <div>
-                    <h4 className="font-medium mb-2">Submission Types</h4>
-                    <div className="flex gap-2 flex-wrap mb-4">
-                      {selectedAssignment.submission_types.map(type => (
-                        <Badge key={type} variant="outline">
-                          {type.replace(/_/g, ' ')}
-                        </Badge>
-                      ))}
-                    </div>
-                    
-                    {/* Render Quiz Engine if it's an online_quiz */}
-                    {selectedAssignment.submission_types.includes('online_quiz') && selectedAssignment.quiz_id ? (
-                      <QuizEngine 
-                        courseId={selectedAssignment.course_id} 
-                        quiz={selectedAssignment as any} // we'll fetch full quiz details inside the engine if needed, or pass it as is. Wait, Assignment obj doesn't have all quiz fields. We need to fetch the quiz or just pass the ID.
-                      />
-                    ) : (
-                      /* Submission Component if types include online stuff */
-                      selectedAssignment.submission_types.some(t => 
-                        ['online_text_entry', 'online_url', 'online_upload'].includes(t)
-                      ) && (
-                        <AssignmentSubmission 
-                          assignment={selectedAssignment}
-                          onSuccess={() => {
-                            // Could trigger a re-fetch here
-                          }}
-                        />
-                      )
-                    )}
-                  </div>
-                )}
-
-                {/* Open in Canvas button */}
-                <div className="pt-4">
-                  <Button asChild>
-                    <a
-                      href={selectedAssignment.html_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Open in Canvas
-                    </a>
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

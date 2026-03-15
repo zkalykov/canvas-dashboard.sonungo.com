@@ -50,6 +50,13 @@ export function useAssignments(courseId?: number) {
   );
 }
 
+export function useAssignment(courseId: number, assignmentId: number) {
+  return useCanvasData<Assignment>(
+    `canvas_assignment_${courseId}_${assignmentId}`,
+    () => canvasApi.getAssignment(courseId, assignmentId)
+  );
+}
+
 export function useUpcomingAssignments() {
   return useCanvasData<Assignment[]>('canvas_upcoming_assignments', () => canvasApi.getUpcomingAssignments());
 }

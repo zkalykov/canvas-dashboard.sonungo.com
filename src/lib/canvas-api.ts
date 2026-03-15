@@ -70,6 +70,12 @@ class CanvasAPI {
     );
   }
 
+  async getAssignment(courseId: number, assignmentId: number): Promise<Assignment> {
+    return this.fetch<Assignment>(
+      `/courses/${courseId}/assignments/${assignmentId}?include[]=submission&include[]=rubric_assessment`
+    );
+  }
+
   async getAllAssignments(): Promise<Assignment[]> {
     const courses = await this.getCourses();
     const assignmentPromises = courses.map(course => this.getAssignments(course.id));
