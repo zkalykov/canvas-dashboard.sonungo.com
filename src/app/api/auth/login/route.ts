@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { encryptPayload } from '@/lib/session';
 
-const SESSION_DURATION_SECONDS = 2 * 60 * 60; // 2 hours
+const SESSION_DURATION_SECONDS = 10 * 60; // 10 minutes
 
 export async function POST(request: NextRequest) {
   try {
